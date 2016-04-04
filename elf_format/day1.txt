@@ -1,0 +1,43 @@
+Understand ELF file format, using gcc 5.2.0 on ArchLinux 4.2.5-1 x86_64
+- reference http://www.linuxjournal.com/article/1059 The ELF Object File Format: Introduction. Apr 01, 1995	 By Eric Youngdale
+
+
+===== hello.c =====
+main()
+{
+        printf("Hello World\n");
+}
+===================
+
+1. gcc -c hello.c
+   this generates hello.o (as object file)
+2. readelf -h hello.o
+   this displays elf header information of hello.o, where you can see things like TYPE, and Number of section headers.
+   show 13 sections
+3. readelf -S hello.o
+   this displays section table information
+   .shstrtab means a string table which is used for section headers
+   'Address' column of this table means virtual memory address that a section is to be loaded into. However, a object file is not meant to be loaded into memory, so it would be 00...0. For a 64 bit file, you will see this address has 8 bytes. 
+   'offset' column meaning the offset within the file of the section.
+   'size' is size of the section. 
+   'flags' indicates whether the section is read-only, writable, and/or executable.
+4. readelf -r hello.o
+   this displays relocation information about the code section
+   you should see 'printf' here?
+5. gcc hello.c -o hello
+   to make executable file
+6. readelf -h hello
+   now 30 sections!
+7. readelf -S hello; readelf -l hello
+   .interp section contains ASCII string that is the name of a dynamic loader, in my case '/lib64/ld-linux-x86-64.so.2'
+   .hash section is just a hash table that is used so that we can quickly locate a given symbol in the .dynsym section, thereby avoiding a linear search of the symbol table. 
+   .dynsym, and .dynstr are a minimal symbol table used by the dynamic linker when performing relocations. You will notice that these sections are mapped into virtual memory because the virtual address field is non-zero.
+   .symtab and .strtab are the regular symbol and string tables, and these are not mapped into virtual memory by the loader.
+   .plt contains the jump table that is used when we call functions in the shared library. By default the .plt entries are all initialized by the linker not to point to the correct target functions, but instead to point to the dynamic loader itself. Thus, the first time you call any given function, the dynamic loader looks up the function and fixes the target of the .plt so that the next time this .plt slot is used we call the correct function. After making this change, the dynamic loader calls the function itself.
+   This feature is known as lazy symbol binding. The addresses used for the target of the jump are actually stored in the .got section. The .got also contains a set of pointers for all of the global variables that are used within a program that come from a shared library.
+   .dynamic section is essentially just a distilled version of the section header table that contains just what is needed for the dynamic loader to do its job. This is introduced because the section header table itself is not loaded into memory for dynamic loader to utilise. .A list of required shared libraries is stored in the .dynamic section.
+   This can be seen by running 'readelf -l hello'
+
+Concepts
+- .text segment/section, also known as CODE SEGMENT
+  In computing, a code segment, also known simply as text, is a portion of an object file or the corresponding section of the program's virtual address space that contains executable instructions. The term "segment" comes from the memory segment, which is a historical approach to memory management now known as paging.

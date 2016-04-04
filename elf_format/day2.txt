@@ -1,0 +1,171 @@
+To demonstrate how a shared library is used and linked.
+- reference: http://www.linuxjournal.com/article/1060   The ELF Object File Format by Dissection May 01, 1995	 By Eric Youngdale
+
+we have hello1.c===
+void greet();
+
+int main() {
+  greet();
+  return 0;
+}
+==== and greet.c ===
+#include <stdio.h>
+
+void greet() {
+  printf("HellO World 1\n");
+}
+========
+
+1. to compile greet.c
+   gcc -fPIC -c greet.c
+   - which generates greet.o
+2. to make a shared lib out of it
+   gcc -shared -o libgreet.so greet.o
+   - which generates libgreet.so
+   - in practice, you nornally generate a shared library by linking more than one thing together (e.g. libgreet.so from greet1.o, greet2.o)
+3. now we compile and link the hello1 program:
+   gcc -c hello1.c
+   // this generates hello1.o
+   gcc -o hello1 hello1.o -L. -lgreet
+   // this generates hello1 executable
+4. Run hello1 by
+   LD_LIBRARY_PATH=. ./hello1
+   The environment variable LD_LIBRARY_PATH tells the dynamic loader to look in additional places for the shared libraries
+   Or, alternatively, we can link our program as:
+   gcc -o hello1 hello1.o /home/alfred/development/seeingelf/hello-using-shared-lib/libgreet.so
+   - which hardcode the path to the shared library and does not need the LD_LIBRARY_PATH value
+
+Practice
+  Everything that you want to put into the shared library should be compiled with -fPIC; when you have compiled everything, you just link it all together with the gcc -shared command.
+
+a.out
+  The procedure (ELF) is so much simpler mainly because we bind addresses to functions at runtime. With a.out libraries, the addresses are bound at link time. This means that lots of special care must be taken to ensure that the .plt and .got have sufficient room for future expansion and that we keep the variables at the same addresses from one version of the library to the next. The tools for building a.out libraries help ensure all of this, but it makes the build procedure much more complicated.
+  The a.out format forced shared libraries to occupy a fixed place in memory. If you wanted to distribute an a.out shared library, you had to register its address space. This was good for performance but it didn't scale at all.
+By contrast, in ELF, shared libraries can be loaded anywhere in memory, and can even appear to be at different addresses to different applications running on the same computer (with the code still effectively loaded in only one place in physical memory)
+
+ELF
+ - ELF shared libraries are position independent. This means that you can load them more or less anywhere in memory, and they will work. The current a.out shared libraries are known as fixed address libraries: each library has one specific address where it must be loaded to work, and it would be foolish to try to load it anywhere else. 
+  = ELF shared libraries achieve their position independence in a couple of ways. The main difference is that you should compile everything you want to insert into the shared library with the compiler switch -fPIC. This tells the compiler to generate code that is designed to be position independent, and it avoids referencing data by absolute address as much as possible.
+  = Position independence does not come without a cost, however. When you compile something to be PIC, the compiler reserves one machine register ( %ebx on the i386) to point to the start of a special table known as the global offset table (or GOT for short).
+
+ - ELF offers further feature that is not easily available with a.out. The dlopen() function can be used to dynamically load a shared library into the user's memory, and you are then able to call the dynamic loader to find symbols within this shared library—in other words, you can call functions that are defined in these modules. In addition, the dynamic loader is used to resolve any undefined symbols within the module itself.
+  with hello2.c as below, and with libgreet.so in current directory
+ 
+1. gcc -c hello2.c
+   - generates hello2.o
+2. gcc -o hello2 hello2.o -ldl
+   - -ldl means search for library dl
+   - this generates hello2 executable
+3. run hello2 with path to shared library file
+   ./hello2 ./libgreet.so
+   - this runs the program which dynamically loads the shared library as specified by argument 
+
+# There are three types of ELF files: .o object files, regular executables, and shared libraries.
+
+# readelf -s dumps the symbol tables and readelf -f dumps the .dynamic section.
+
+# a section (in a ELF file) is a collection of information of a similar type. Each section represents a portion of the file. For example, executable code is always placed in a section known as .text; all data variables initialized by the user (programmer) are placed in a section known as .data; and uninitialized data is placed in a section known as .bss which is special because it doesn't take up space in the file—it only tells how much space is needed for uninitialized variables. The kernel will load both .data and .bss sections into memory.
+
+# a.out executables have no relocations. The kernel loader cannot resolve any symbols and will reject any attempt to run such a binary. An a.out object file will of course have relocations, but the linker must be able to fully resolve these to generate a usable executable.
+
+# PLT : Procedure Linkage Table
+  ## In a sense this is nothing more than a fancy name for a jumptable, an array of jump instructions, one for each function that you might need to go to.# GOT : Global Offset Table
+# to understand how PLT/GOT works: https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html
+
+
+More Concepts
+- Object Files
+  = A file that contains compiled code is known as an object file. An Object file can be any of the following types :
+   # Relocatable file    
+   # Shared object file
+   # Executable file
+
+
+=========================================
+Further exploration of ELF files 
+reference: http://carsontang.github.io/unix/2013/06/01/guide-to-object-file-linking/    01 June 2013
+== math.c ==
+int add(int a, int b) {
+  return a + b;
+}
+== main.c ==
+int add(int a, int b);
+
+#include <stdio.h>
+
+int main(void) {
+  int result = add(1, 2);
+  printf("result: %d\n", result);
+  return 0;
+}
+====
+1. gcc -c math.c                      # Create relocatable obj file (math.o)
+2. readelf -h math.o | grep Type      # Read math.o with readelf, shows that math.o is relocatable file
+3. gcc -c main.c                      # creates relocatable obj file (main.o)
+4. gcc main.c math.o -o main          # create executable file main
+5. readelf --symbols main.o
+6. readelf --symbols main
+
+- From 5/6 steps, you can see that relocatable object file (main.o) has symbols associated with the ZERO address. The executable object file (main) has symbols associated with real addresses. After the compiler and assembler generate the relocatable object file, the data start at address 0. The linker then relocates these sections by associating each with a location with in memory.
+
+- Executable object files are relocatable object files with address assigned so that it can be placed into memory for execution, plus some other details.
+- Shared object file are meant to be dynamically linked at runtime, whereaz (static) relocatable files can be linked/embedded into executable files - which makes the relocatable (static) object file unneeded in runtime. It is a special type of relocatable object file that can be loaded into memory and linked dynamically, either at load time or at run time.
+
+More/Reiterate Concepts
+- Library and Linking
+  Libraries are important in the program linking or binding process, which resolves references known as links or symbols to library modules. The linking process is usually automatically done by a linker or binder program that searches a set of libraries and other modules in a given order. Usually it is not considered an error if a link target can be found multiple times in a given set of libraries. Linking may be done when an executable file is created, or whenever the library is used at run time.
+
+- Relocation
+  Some references in a program or library module are stored in a relative or symbolic form which cannot be resolved until all code and libraries are assigned final static addresses. Relocation is the process of adjusting these references, and is done either by the linker or the loader. In general, relocation cannot be done to individual libraries themselves because the addresses in memory may vary depending on the program using them and other libraries they are combined with. Position-independent code avoids references to absolute addresses and therefore does not require relocation.
+
+- PIC, or position-independent code
+  In computing, position-independent code (PIC) or position-independent executable (PIE) is a body of machine code that, being placed somewhere in the primary memory, executes properly regardless of its absolute address. PIC is commonly used for shared libraries, so that the same library code can be loaded in a location in each program address space where it will not overlap any other uses of memory (for example, other shared libraries). Position-independent code can be executed at any memory address without modification. This differs from relocatable code, in which a link editor or program loader modifies a program before execution so it can be run only from a particular memory location.
+
+- Static Library
+  When linking is performed during the creation of an executable or another object file, it is known as static linking or early binding. In this case, the linking is usually done by a linker, but may also be done by the compiler. A static library, also known as an archive, is one intended to be statically linked. Originally, only static libraries existed. Static linking must be performed when any modules are recompiled.
+All of the modules required by a program are sometimes statically linked and copied into the executable file. This process, and the resulting stand-alone file, is known as a static build of the program. A static build may not need any further relocation if virtual memory is used and no address space layout randomization is desired
+
+- Dynamic Linking
+  Dynamic linking or late binding is linking performed while a program is being loaded (load time) or executed (run time), rather than when the executable file is created. A dynamically linked library (dynamic-link library or DLL under Windows and OS/2; dynamic shared object or DSO under Unix-like systems) is a library intended for dynamic linking. Only a minimum amount of work is done by the linker when the executable file is created; it only records what library routines the program needs and the index names or numbers of the routines in the library. The majority of the work of linking is done at the time the application is loaded (load time) or during execution (run time). Usually, the necessary linking program, called a "dynamic linker" or "linking loader", is actually part of the underlying operating system. 
+
+- Library Loading (at runtime)
+  Loaders for shared libraries vary widely in functionality. Some depend on the executable storing explicit paths to the libraries. Any change to the library naming or layout of the file system will cause these systems to fail. More commonly, only the name of the library (and not the path) is stored in the executable, with the operating system supplying a method to find the library on-disk based on some algorithm.
+  If a shared library that an executable depends on is deleted, moved, or renamed, or if an incompatible version of the library is copied to a place that is earlier in the search, the executable would fail to load. This is called Dependency hell existing on many platforms. The (infamous) Windows variant is commonly known as DLL hell. This problem cannot occur if each version of each library is uniquely identified and each program references libraries only by their full unique identifiers. The "DLL hell" problems with earlier Windows versions arose from using only the names of libraries, which were not guaranteed to be unique, to resolve dynamic links in programs. 
+
+- DLL Hell
+  There are a number of problems commonly encountered with DLLs – especially after numerous applications have been installed and uninstalled on a system. The difficulties include conflicts between DLL versions, difficulty in obtaining required DLLs, and having many unnecessary DLL copies.
+
+- Dynamic Loading
+  Dynamic loading, a subset of dynamic linking, involves a dynamically linked library loading and unloading at run time on request. Such a request may be made implicitly at compile time or explicitly at run time. Implicit requests are made at compile time when a linker adds library references that include file paths or simply file names. Explicit requests are made when applications make direct calls to an operating system's API at run time.
+  Most operating systems that support dynamically linked libraries also support dynamically loading such libraries via a run-time linker API. For instance, Microsoft Windows uses the API functions LoadLibrary, LoadLibraryEx, FreeLibrary and GetProcAddress with Microsoft Dynamic Link Libraries; POSIX based systems, including most UNIX and UNIX-like systems, use dlopen, dlclose and dlsym. 
+
+- Loader
+  In Unix, the loader is the handler for the system call execve().[1] The Unix loader's tasks include:
+  = validation (permissions, memory requirements etc.);
+  = copying the program image from the disk into main memory;
+  = copying the command-line arguments on the stack;
+  = initializing registers (e.g., the stack pointer);
+  = jumping to the program entry point (_start).
+
+
+
+========== Further Exploration on Linker 
+reference: http://www.linuxjournal.com/article/6463 Nov 26, 2002	 By Sandeep Grover
+
+- Linking is the process of combining various pieces of code and data together to form a single executable that can be loaded in memory. Linking can be done at compile time, at load time (by loaders) and also at run time (by application programs). 
+- Considerable overlap exists between the functions of linkers and loaders. One way to think of them is: the loader does the program loading; the linker does the symbol resolution; and either of them can do the relocation.
+
+- ELF headers
+The various sections in the ELF relocatable object file are:
+.text, the machine code of the compiled program.
+ = .rodata, read-only data, such as the format strings in printf statements.
+ = .data, initialized global variables.
+ = .bss, uninitialized global variables. BSS stands for block storage start, and this section actually occupies no space in the object file; it is merely a placer holder.
+ = .symtab, a symbol table with information about functions and global variables defined and referenced in the program. This table does not contain any entries for local variables; those are maintained on the stack.
+ = .rel.text, a list of locations in the .text section that need to be modified when the linker combines this object file with other object files.
+ = .rel.data, relocation information for global variables referenced but not defined in the current module.
+ = .debug, a debugging symbol table with entries for local and global variables. This section is present only if the compiler is invoked with a -g option.
+ = .line, a mapping between line numbers in the original C source program and machine code instructions in the .text section. This information is required by debugger programs.
+ = .strtab, a string table for the symbol tables in the .symtab and .debug sections.
+
+
