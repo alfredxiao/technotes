@@ -1,0 +1,3 @@
+you can define a type by enumeration of possbile values, like
+data Bool = True | False
+but note that the enumeration values must start with upper case letter.

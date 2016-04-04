@@ -1,0 +1,7 @@
+to define exponentiation operator ^, you could
+m ^ 0 = 1
+m ^ n = m * (^) m (n - 1)
+
+where (^) can be treated as a function, so (^) m k means m^k.
+
+

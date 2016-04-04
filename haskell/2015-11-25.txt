@@ -1,0 +1,4 @@
+0:[1,2,3] => [0,1,2,3]
+[1,2,3]:0 => ERROR
+
+note: in the second case, you need to use [1,2,3]++[0]

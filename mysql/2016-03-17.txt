@@ -1,0 +1,43 @@
+in MySQL, system_time_zone refers the the timezone setting of the operating system that MySQL runs in. whereas time_zone refers to what timezone you want to assign to MySQL server instances. If you see system_time_zone is different from your OS's timezone setting, you probably need to restart MySQL to make it read that information from your OS.
+
+Honestly, I think 'system_time_zone' is better renamed to 'os_time_zone', because it is not necessary the MySQL server instances' timezone. Only when time_zone is set to 'SYSTEM', MySQL server instances use the OS's timezone as its own timezone.
+
+In addition, there is a concept of session.time_zone. which is used for client side only?
+
+
+boolean = tinyint(1)
+
+ENUM type can be used to:
+1. constraint possible values
+2. save storage space as values are stored as integer which points to indexed values in the defined enum list
+
+SET type allows multiple values whereas ENUM allows only a single value from predefined list of values.
+
+
+FLOAT and DOUBLE types are used to store possibly large numeric numbers but with the likelyhood of losing precision, so they are not good choice to store monetory values. For currency values, use DECIMALs
+
+NULL is specially treated in MySQL. Basically it is not considered as value. If you have a column defined as 'Unique' but allow nullable, actually you are allowed to insert more than one rows with NULL in the column.
+
+
+MySQL composit index, i.e. multiple column index, can be used for queries that test prefix columns, that is to say, the first column, the first and the second column, or the first three columns, and so on.
+
+Some unicode characters actually use more than one byte when being stored, so when you use LENGTH() function, you may notice it returns actual number of bytes being used for certain string value, whereas CHAR_LENGTH() returns number of characters of that string. When there are multiple byte characters involved, these two numbers differ.
+
+To query substring of a column, LEFT, RIGHT, and MID are very handy.
+
+CONCAT(column1, column2)
+CONCAT_WS(sep, column1, column2)
+
+
+Again, as an alternative to composite index, there is a technique in speeding up query performance :
+Suppose table1 has column col1, col2, and you want to query this table as:
+select * from table1
+  where col1=val1 and col2=val2
+
+you can introduce a hash_of_col1_2 column to store the hashed value, and then your query can be modified as:
+select * from table1
+  where hash_of_col1_2=MD5(CONCAT(val1,val2)
+  AND col1=val1 AND col2=val2;
+
+note you need all matching criteria because hash is not guaranteed to be unique.
+

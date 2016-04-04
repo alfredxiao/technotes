@@ -1,0 +1,1 @@
+Subquery can be used as a table alias, or as part of an IN expression

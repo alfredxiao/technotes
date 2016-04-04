@@ -1,0 +1,40 @@
+one example to illustrate the difference between imperative programming and functional programming:
+
+problem: sum of 1,2,...,n
+- imperative:
+function sum(n) {
+  count = 0
+  total = 0
+  repeat
+    count = count + 1
+    total = total + count
+  until 
+    count = n
+
+- functional:
+sum [] = 0
+sum (x:xs) = x + sum xs
+
+----- what is polymorphic (types)
+For any type a, the function length has type [a] -> Int. A type that contains one or more type variables is called polymorphic ('of many forms').
+more examples: fst, head, take, zip, id
+
+--- what is overloaded (types)
+A type that contains one or more class constraints is called overloaded. 
+examples: 
+(+) :: Num a => a -> a -> a
+abs :: Num a => a -> a
+
+--- various forms of pattern matching
+fst (x, _) = x   -- > this is tuple pattern
+snd (_, y) = y   -- > same
+
+or [True, _] = True --> list pattern
+or [_, True] = True --> same
+sum (x:xs) = x + sum xs  --> list pattern 
+
+
+--- sections
+(+) (1+) (+2) are sections
+- they can be used to be passed other functions as arguments,e e.g
+and = foldr (^) True

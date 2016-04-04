@@ -1,0 +1,5 @@
+how to import a module
+
+import System.Eval.Utils
+
+cycle [1,2,3] => [1,2,3,1,2,3,1,2,3...]

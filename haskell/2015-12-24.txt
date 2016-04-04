@@ -1,0 +1,40 @@
+- when defining a data type, think of it like a constructor in Java
+
+data Shape = Circle Float Float Float | Rectangle Float Float Float Float
+in the form of record
+data Shape = Circle {x :: Float, y :: Float, radius :: Float } | Rectangle {x1::Float, y1::Float, x2::Float, y2::Float}
+
+similiar to:
+class Circle extends Shape {
+  public Circle (float x, float y, float radius) {
+    ...
+  }
+}
+
+- the beauty of using record is that you name your fields (constructor parameters)
+circle1 = Circle {x=1.0, y=2.0, radius=10}
+
+- the above demonstrates the concept of value constructor in Haskell
+- below is the concept of type constructor, similar to templates in C++ or Generics in Java
+[Int] is type created by utilising [] and Int type, where Int is a type parameter.
+similarly, in 
+data Maybe a = Nothing | Just a  
+`Maybe Int` can be considered a new type created by utilsing Maybe and Int type (like [Int] utilising [] and Int)
+
+you cannot have value of type Maybe, it has to be Maybe sometype
+
+- typeclasses are like Interface in Java, we don't make concrete data value out of typeclasses.
+- examples: Eq, Ord
+ 
+- to define a typeclass
+class Eq a where
+  (==) :: a -> a -> Bool  
+  (/=) :: a -> a -> Bool  
+
+- to implement an 'interface'
+data TrafficLight = Red | Yellow | Green
+instance Eq TrafficLight where  
+    Red == Red = True  
+    Green == Green = True  
+    Yellow == Yellow = True  
+    _ == _ = False  

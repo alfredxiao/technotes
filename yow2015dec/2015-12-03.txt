@@ -1,0 +1,24 @@
+2015 YowConference
+
+Day1: Keynote
+openzipkin  (microservice call flow/trace)
+spigo
+
+Invariants Symmetry Isolation
+
+Facebook Performance: ScanLab, CT-Scan, SmartDiff
+
+MicroService When What How
+- Don't share persistance across microservices
+- AntiPattern - Leak Abstraction
+- randyshoup on slideshare
+
+Haskell
+- Helium
+- Airship
+- Oddjob
+- PG- Transaction
+
+Data Variance
+- Adaptive Object Model
+

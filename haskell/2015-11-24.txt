@@ -1,0 +1,7 @@
+lambda can accept more than one argument, e.g
+
+\_ n => 1 + n  (_ means 'ignored')
+
+'buttom value' means a compuation that never ends successfully, this includes a failure due to error, infinite loop, etc. Bottom is a member of any type.
+
+

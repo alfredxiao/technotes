@@ -1,0 +1,4 @@
+in list comprehension, symbol '<-' is read 'is drawn from' or 'such that'
+
+list comprehension allows 'gards' to constraint values produced by earlier generators. e.g
+factors n = [x | x <- [1..n], n `mod` x == 0]

@@ -1,0 +1,30 @@
+In MySQL, + - * / DIV MOD are the basic numeric operators
+
+Also POWER(a, n) means a ^ n.
+
+UNIX_TIMESTAMP is milliseconds since 1970
+
+DAYNAME returns weekday, e.g. Friday
+
+DAYOFMONTH, DAYOFWEEK, DAYOFYEAR
+
+MONTHNAME
+
+To test if time_zone support is installed on your linux, run 'SELECT CONVERT_TZ('2012-06-07 12:00:00', 'GMT', 'America/New_York');'
+if it returns NULL, it means time_zone support is not installed.
+
+To install time_zone support, run
+'mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql'
+
+To query available time_zones, run
+'USE mysql;
+SELECT * FROM `time_zone_name`;'
+
+select count(col1) from table1; returns number of non NULL rows in col1;
+
+select 
+  CASE WHEN col1 THEN 'A' ELSE 'B' END as col_str,
+  CASE col1 WHEN 1 THEN 'A' ELSE 'B' END as col_str_as_well
+
+'insert 1000 records with autocommit' vs 'insert 1000 records within one transaction' is a good example where transactions can improve performance. The reason of this is autocommit exhibits one transaction for each record insertion, and each transaction involves its own overhead. By combining these 1000 transaction into one, you save a lot of overhead.
+

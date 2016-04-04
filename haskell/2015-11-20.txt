@@ -1,0 +1,6 @@
+to install datomic:
+bin/maven-install   (don't cd to bin and run maven-install)
+
+
+to run datomic:
+bin/transactor config/my-transactor.properties
