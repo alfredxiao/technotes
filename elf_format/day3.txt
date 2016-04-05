@@ -1,0 +1,71 @@
+Tools for Manipulating Object Files
+
+Here's a list of Linux tools that can be used to explore object/executable files.
+
+- ar: creates static libraries.
+- objdump: this is the most important binary tool; it can be used to display all the information in an object binary file.
+- strings: list all the printable strings in a binary file.
+- nm: lists the symbols defined in the symbol table of an object file.
+- ldd: lists the shared libraries on which the object binary is dependent.
+- strip: deletes the symbol table information.
+
+================== Trying it out with more library building and referencing =========
+http://www.yolinux.com/TUTORIALS/LibraryArchives-StaticAndDynamic.html
+
+==== Static Library
+Source: ctest1.c ctest2.c prog.c
+--------ctest1.c
+void ctest1(int *i)
+{
+   *i=5;
+}
+---------ctest2.c
+ctest2.c void ctest2(int *i)
+{
+*i=100;
+}
+----------prog.c
+#include <stdio.h>
+void ctest1(int *);
+void ctest2(int *);
+
+int main()
+{
+   int x;
+   ctest1(&x);
+   printf("Valx=%d\n",x);
+
+   return 0;
+}
+1. To build individual relocatable files
+  cc -Wall -c ctest1.c ctest2.c   # generates ctest1.o and ctest2.o
+  # -Wall include warnings
+2. To build a 'library'
+  ar -cvq libctest.a ctest1.o ctest2.o   # generates libctest.a whereas the library is named ctest
+3. To lists files/modules in a library
+  ar -t libctest.a
+4. Linking with library
+  either
+    cc -o prog prog.c libctest.a
+  or
+    cc -o prog prog.c -L/path/to/library-directory -lctest
+5. run program
+  prog
+  # can delete libctest.a since it has been embedded into prog
+
+======== dynamic library
+with the same source files: ctest1.c, ctest2.c, prog.c
+1. To build individual relocatable files
+  gcc -Wall -fPIC -c *.c
+2. To build a shared library (meant to be loaded at load-time or run-time)
+  #gcc -shared -Wl,-soname,libctest -o libctest.so   *.o
+  gcc -shared -o libctest.so   ctest1.o ctest2.o
+3. To build executable referencing shared library
+  gcc -Wall  -L. prog.c -lctest -o prog
+5. to list dynamic libraries an executable depends on
+  ldd prog
+6. to list dynamic libraries an library depends on
+  ldd libctest.so
+
+
+=========
