@@ -1,0 +1,98 @@
+This is to further explore the concepts of a ELF Linking View, and start to explore Execution View
+
+Reference: http://www.sw-at.com/blog/2011/04/01/dissecting-executable-and-linking-format-elf/
+April 1st, 2011 by Atul Sharma
+
+with a typical C program === typical.c =
+#include <stdio.h>
+#include <stdlib.h>
+
+int globalVariableAssigned = 10;
+int globalVariableUnassigned;
+
+int main(int argc, char **argv){
+	int localVariable = 100;
+	printf("ELF test Coden");
+	printf("globalVariableAssigned = %dn", globalVariableAssigned);
+	printf("globalVariableUnassigned = %dn", globalVariableUnassigned);
+	printf("localVariable = %dn", localVariable);
+	return EXIT_SUCCESS;
+}
+==========
+
+1. to compile it
+  gcc -o typical typical.c
+2. to view elf header table
+   readelf -h typical
+   # it tells you that there is program headers
+3. to view what's in a section
+   objdump -d -j .data typical
+   # shows what's in .data section
+
+Program Headers
+ - Program header table: Holds information to create a process image.Program header table is an array of structures, each describing a segment or other information the system needs to prepare the program for execution.
+
+
+=============== Explore Tools
+Reference https://www.cs.swarthmore.edu/~newhall/unixhelp/compilecycle.html
+Tia Newhall, Professor and Department Chair, Computer Science Department, Swarthmore College
+
+also: http://opensourceforu.efytimes.com/2011/10/gnu-binutils-collection-of-binary-tools/
+By Manoj Kumar on October 1, 2011
+
+===with source simple.c ===
+// simple.c:
+#include <unistd.h>
+
+#define MAX  10
+
+int foo(int y);
+
+main() {
+
+  int x, i;
+  char buf[10];
+
+  for(i=0; i < MAX; i++) {
+    x = foo(i);
+    // a crazy way to print to stdout
+    sprintf(buf, "%d", x);
+    write(0, buf, strlen(buf));
+    buf[0] = '\n';
+    write(0, buf, 1);
+  }
+
+}
+int foo(int y) {
+  return y*y;
+}
+
+1. The Unix file command can be used to find out information about the type of a file.
+2. preprocessor
+  You can run cpp directly on the simple.c or you can run gcc with the -E flag to run just the preprocessor part of the compiler that expands #include (replaces them with .h file contents), #define (replaces macro and constant use with their definition), and #if (determines conditional inclusion):
+  $ cpp simple.c | less
+  or using gcc to just run preprocessor part
+  $ gcc -E simple.c  | less
+3. the core compiler that creates .o file using output of preprocessor
+  $ gcc -c simple.c
+4. you can use objdump or gdb to see assembly code
+  $ objdump -d simple.o
+4. link editor
+The link editor
+  The link editor creates an executable file (a.out file) from one or more .o files and .a or .so files (static or dynamic libraries):
+  # create an executable file from simple.o and some standard libraries that gcc automatically links in:
+  $ gcc -o simple simple.o
+5. viewing the symbol table
+  Use nm (or objdump -t) to list the symbol table from an a.out or .so file
+6. Veiwing shared object dependencies and the dynamic symbol table:
+  ldd will list shared object dependencies on an a.out or .so files (i.e. which shared objects need to be loaded at runtime to run the a.out or with loading the .so):
+  $ ldd simple
+
+  Use objdump -T to see dynamic symbol table entries from a .so file (here we are just finding the one for write):
+  $ objdump -T /lib/libc.so.6 | grep write
+
+
+More Concepts
+- You may ask, what is the difference from the tar (tape archive) tool, which also can archive binary and other types of files, and that too, with compression? The answer is, ar creates a symbol table inside the output file, whereas tar doesn’t; ar yields a collection of symbols, and tar a collection of files.
+- Finally, one more command that I need to cover is size, to get the sizes of different memory sections of an ELF file (executable):
+ $ size a.out
