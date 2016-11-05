@@ -1,0 +1,51 @@
+Install Arch as VM guest:
+
+# after booting live cd
+parted /dev/sda print
+parted /dev/sda
+(parted) mklabel msdos
+(parted) mkpart primary ext4 1MiB 100%
+(parted) set 1 boot on
+mkfs.ext4 /dev/sda1
+mount /dev/sda1 /mnt
+
+pacstrap  /mnt base base-devel
+genfstab -U /mnt >> /mnt/etc/fstab
+arch-chroot /mnt /bin/bash
+
+# Uncomment en_US.UTF-8 UTF-8 in /etc/locale.gen, as well as other needed localisations. Save the file, and generate the new locales:
+
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+
+printf "KEYMAP=de-latin1\nFONT=lat9w-16" > /etc/vconsole.conf
+
+ln -s /usr/share/zoneinfo/Australia/Melbourne /etc/localtime
+
+pacman -S --noconfirm grub
+grub-install --target=i386-pc /dev/sda
+grub-mkconfig -o /boot/grub/grub.cfg
+
+echo "myvmhostname" > /etc/hostname
+systemctl enable dhcpcd@enp0s3.service
+
+# It is recommended to append the same hostname to localhost entries in /etc/hosts.
+
+passwd
+exit #(exit chroot)
+umount -R /mnt
+reboot
+
+
+useradd -m -G wheel -s /bin/bash alfred
+passwd alfred
+visudo # uncommend # %wheel ALL=(ALL) NOPASSWD: ALL
+
+exit (and relogin as:)
+alfred/PWD
+
+sudo pacman -S --noconfirm xfce4 slim xorg xorg-xinit xf86-video-fbdev xf86-video-vesa
+sudo systemctl enable slim.service
+
+echo "xfce4-session" > /home/alfred/.xinitrc
+reboot
