@@ -1,0 +1,32 @@
+
+Types include
+1. magnetic-stripe, also referred to as magstripe
+2. EMV, or chip and PIN (EMV stands for EuroPay, MasterCard, Visa)
+
+Magstrip
+- Easily cloned
+- Hacker can either copy the information read or by installing tiny card scanners inside card-swiping devices.
+
+- 2013 Target breach happened in the U.S. which triggered the deployment of EMV cards.
+ = It was believed that Target breach was because of malware was installed on POS card readers
+ = It was not confirmed but it could also be that a centralised server - which all POS terminals talk to before connecting to bank acquirer - was hacked.
+ = in total, 40 million credit card records was stolen.
+- However, the U.S. used a Chip and Signature approach instead of Chip and PIN
+ = partly because that by law, merchants foot the bill if fraud was made by forging signatures but banks will be responsible when card and PIN was stolen.
+ = Though 130 countries around the world have phased out their magnetic stripe cards (which you may have noticed if you’ve tried to use a credit card overseas), the U.S. has lagged behind, with both merchants and banks assigning the blame to each other. Retailers need new card readers to handle chip-and-PIN cards, and they can be costly; it’s why only 10 percent of U.S. merchants have upgraded. The merchants don’t want to spend the money until they know banks will issue chip-and-PIN cards. And the banks don’t want to spend money on the more expensive cards until merchants install the card readers. So both sides are effectively telling the other to go first.
+ = Credit card networks like Visa and MasterCard introduced the Payment Card Industry (PCI) Security Standards, which are supposed to provide more anti-fraud controls. But that effectively tries to band-aid an inherently insecure magnetic stripe system. More recently, the card networks proposed a shift in liability rules that they hope will nudge banks and merchants toward upgrading. By October 2015, if the merchant has a chip reader and the card has a traditional magnetic stripe, the bank will be liable for any fraud. Likewise, if a chip-and-PIN card is presented to a merchant with no chip reader, the merchant will be liable. In other words, both sides will be penalized for not upgrading to the chip-and-PIN system.
+
+- European markets switched to EMV technology about 10 years ago, and consumers there foot the bill for fraud.
+
+- EMV cards greatly reduced fraud by cloning magstrip cards, however, it does not stop other frauds
+- For example, card-not-present (CNP) fraud is growing briskly, thanks to the Internet. Such fraud is committed without the physical card in hand. Account information can be gleaned via an online data breach, a card scanner or by someone briefly in possession of a card such as a salesperson. CNP purchases can be made with that information online, on an order form or over the phone.
+
+
+Approaches
+Because a consumer’s financial and personal information places them at greater risk for fraud, credit card companies have been testing and implementing biometrics-based transactions.
+MasterCard tried a cellphone payment experiment dubbed selfie-pay. A facial recognition app requires users to blink before taking a picture of themselves to prove their identity and complete a transaction through their cellphone.
+Apple offers its users Apple Pay, which uses a thumbprint scan to conduct a transaction.
+
+Both VISA and MasterCard announced late last year they will employ more secure transaction technology through 3D Secure 2.0, which will replace an older version of the software that required static passwords through Verified by VISA and MasterCard SecureCode. Since those knowledge-based security measures are less secure, 3D Secure 2.0 will issue authentication codes to a user’s cellphone, which can be used to conduct more secure CNP purchases online.
+
+Proximity payment verification, Mr. Pascual explained, also has been used to authenticate transactions. In this case, a card issuer will use geolocation software to determine the location of the user’s cellphone relative to the location of the computer that’s being used to shop online. Obviously, this poses a challenge if the user, for whatever reason, does not have their cellphone.
