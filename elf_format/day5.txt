@@ -1,0 +1,6 @@
+==== Explore on execution view
+reference: http://opensourceforu.efytimes.com/2015/12/the-basics-of-binary-exploitation/
+By Rakesh Paruchuri on December 4, 2015 i
+
+Not yet explored in detail, below is about PLT/GOT achieving dynamic linking
+https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html
