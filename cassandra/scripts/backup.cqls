@@ -1,0 +1,145 @@
+CREATE KEYSPACE CQLKeyspace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
+
+USE CQLKeyspace;
+
+CREATE TABLE t (
+                   id int,
+                   k int,
+                   v text,
+                   PRIMARY KEY (id)
+               );
+
+INSERT INTO t (id, k, v) VALUES (0, 0, 'val0');
+INSERT INTO t (id, k, v) VALUES (1, 1, 'val1');
+
+ SELECT * FROM t;
+
+ CREATE TABLE t2 (
+                   id int,
+                   k int,
+                   v text,
+                   PRIMARY KEY (id)
+               );
+
+INSERT INTO t2 (id, k, v) VALUES (0, 0, 'val0');
+INSERT INTO t2 (id, k, v) VALUES (1, 1, 'val1');
+INSERT INTO t2 (id, k, v) VALUES (2, 2, 'val2');
+
+SELECT * FROM t2;
+
+CREATE KEYSPACE CatalogKeyspace WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
+USE CatalogKeyspace;
+CREATE TABLE journal (
+                       id int,
+                       name text,
+                       publisher text,
+                       PRIMARY KEY (id)
+                   );
+
+INSERT INTO journal (id, name, publisher) VALUES (0, 'Apache Cassandra Magazine', 'Apache Cassandra');
+INSERT INTO journal (id, name, publisher) VALUES (1, 'Couchbase Magazine', 'Couchbase');
+
+SELECT * FROM journal;
+CREATE TABLE magazine (
+                       id int,
+                       name text,
+                       publisher text,
+                       PRIMARY KEY (id)
+                   );
+
+INSERT INTO magazine (id, name, publisher) VALUES (0, 'Apache Cassandra Magazine', 'Apache Cassandra');
+INSERT INTO magazine (id, name, publisher) VALUES (1, 'Couchbase Magazine', 'Couchbase');
+
+SELECT * from magazine;
+
+===== Below are bash commands
+nodetool snapshot --tag catalog-ks -- catalogkeyspace
+# create snapshots for all tables in multiple keyspaces
+nodetool snapshot --tag catalog-cql-ks --catalogkeyspace,cqlkeyspace
+# single table
+nodetool snapshot --tag magazine --table magazine  -- catalogkeyspace
+# multiple tables from same keyspace
+nodetool snapshot --kt-list cqlkeyspace.t,cqlkeyspace.t2 --tag multi-table
+nodetool snapshot --kt-list cqlkeyspace.t,cqlkeyspace.t2 --tag multi-table-2
+# multiple tables from multiple keyspaces
+nodetool snapshot --kt-list catalogkeyspace.journal,cqlkeyspace.t --tag multi-ks
+
+# list snapshots
+nodetool listsnapshots
+# find snapshot directories
+find –name snapshots
+
+# clear snapshots
+nodetool clearsnapshot -t magazine – cqlkeyspace
+# clear all snapshots from a keyspace
+nodetool clearsnapshot –all -- cqlkeyspace
+
+# Incremental Backup
+# Status
+nodetool statusbackup
+# enable it (from command line, persistent config is incremental_backups in cassandra.yaml)
+nodetool enablebackup
+# disable it
+nodetool disablebackup
+
+
+# Re-insert data after backup enabled
+use cqlkeyspace ;
+INSERT INTO t (id, k, v) VALUES (2, 2, 'val2');
+INSERT INTO t (id, k, v) VALUES (3, 3, 'val3');
+INSERT INTO t2 (id, k, v) VALUES (3, 3, 'val3');
+INSERT INTO t2 (id, k, v) VALUES (4, 4, 'val4');
+INSERT INTO t2 (id, k, v) VALUES (5, 5, 'val5');
+USE CatalogKeyspace;
+INSERT INTO journal (id, name, publisher) VALUES (2, 'Oracle Database', 'Oracle');
+INSERT INTO journal (id, name, publisher) VALUES (3, 'IBM Cloud', 'IBM');
+INSERT INTO magazine (id, name, publisher) VALUES (2, 'Java Magazine', 'Oracle');
+INSERT INTO magazine (id, name, publisher) VALUES (3, 'Open Source', 'OSI');
+
+
+# Flush data into sstables
+nodetool flush cqlkeyspace t
+nodetool flush cqlkeyspace t2
+nodetool flush catalogkeyspace journal magazine
+
+# find (incremental) backups
+find -name backups
+
+# restore from snapshots and incremental backups
+1. TRUNCATE t;
+2. cp snapshot/mysnapshot/*  t-UUID/
+3. cp backups/* t-UUID/
+4. Refresh it
+ nodetool refresh -- cqlkeyspace t
+5. See error
+error: /var/lib/cassandra/data/cqlkeyspace/t-86eb382020af11ebb486d7ee8570c286/backups/md-3-big-Data.db -> /var/lib/cassandra/data/cqlkeyspace/t-86eb382020af11ebb486d7ee8570c286/md-3-big-Data.db: Operation not permitted
+-- StackTrace --
+java.nio.file.FileSystemException: /var/lib/cassandra/data/cqlkeyspace/t-86eb382020af11ebb486d7ee8570c286/backups/md-3-big-Data.db -> /var/lib/cassandra/data/cqlkeyspace/t-86eb382020af11ebb486d7ee8570c286/md-3-big-Data.db: Operation not permitted
+	at sun.nio.fs.UnixException.translateToIOException(UnixException.java:91)
+	at sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:102)
+	at sun.nio.fs.UnixFileSystemProvider.createLink(UnixFileSystemProvider.java:476)
+	at java.nio.file.Files.createLink(Files.java:1086)
+	at org.apache.cassandra.io.util.FileUtils.createHardLink(FileUtils.java:100)
+	at org.apache.cassandra.io.sstable.format.SSTableReader.createLinks(SSTableReader.java:1828)
+	at org.apache.cassandra.io.sstable.format.SSTableReader.createLinks(SSTableReader.java:1817)
+	at org.apache.cassandra.db.lifecycle.Tracker.maybeIncrementallyBackup(Tracker.java:397)
+	at org.apache.cassandra.db.lifecycle.Tracker.addSSTables(Tracker.java:198)
+	at org.apache.cassandra.db.ColumnFamilyStore.loadNewSSTables(ColumnFamilyStore.java:818)
+	at org.apache.cassandra.db.ColumnFamilyStore.loadNewSSTables(ColumnFamilyStore.java:723)
+	at org.apache.cassandra.service.StorageService.loadNewSSTables(StorageService.java:5174)
+6. select * from t;
+ // It seems data from snapshot and backup files are all appearing, so the above error is just a warning?
+ // Also, this error was probably caused by incremental backup being attempted while refreshing. Perhaps we should disable backup
+ // when refreshing, and we can enable it once refreshed.
+7. Repeat above procedures (but disable backup before running 'refresh')
+8. No error from running 'nodetool refresh'
+9. Running 'Truncate t' causes error from /var/log/cassandra/system.log, and 9042 port shutdown due to errors
+ - Causes was when in above step 2/3, file owndership changed to current user which is not the same as the cassandra process user
+10. Repeat above procedures with file permission fixed (in copying the snapshot and backup files)
+11. After refreshing, run 'Truncate t' causes no problem!
+
+# Use sstableloader
+# It loads into cluster, making sure RF is maintained
+# PATH!!!!  it must be a path that ends with  /<KEYSPACE>/<TABLE>, where you sstable files are stored.
+# Do not use the default cassandra data folder to store files to be loaded
+sstableloader -d localhost /root/cqlkeyspace/t
