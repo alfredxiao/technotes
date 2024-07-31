@@ -1,0 +1,1 @@
+`./sqlrun words.db "select * from words limit 2"`
