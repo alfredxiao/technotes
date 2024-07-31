@@ -1,0 +1,9 @@
+In computer science, a database cursor is a mechanism that enables traversal over the records in a database. Cursors facilitate subsequent processing in conjunction with the traversal, such as retrieval, addition and removal of database records. The database cursor characteristic of traversal makes cursors akin to the programming language concept of iterator.
+
+Cursors are used by database programmers to process individual rows returned by database system queries. Cursors enable manipulation of whole result sets at once. In this scenario, a cursor enables the sequential processing of rows in a result set.
+
+In SQL procedures, a cursor makes it possible to define a result set (a set of data rows) and perform complex logic on a row by row basis. By using the same mechanics, a SQL procedure can also define a result set and return it directly to the caller of the SQL procedure or to a client application.
+
+A cursor can be viewed as a pointer to one row in a set of rows. The cursor can only reference one row at a time, but can move to other rows of the result set as needed.
+
+A prepared statement can have zero or more open cursors. Each cursor is identified by a small integer, which is usually the P1 parameter to the opcode that uses the cursor. There can be multiple cursors open on the same index or table. All cursors operate independently, even cursors pointing to the same indices or tables. The only way for the virtual machine to interact with a database file is through a cursor. Instructions in the virtual machine can create a new cursor (ex: `OpenRead` or `OpenWrite`), read data from a cursor (`Column`), advance the cursor to the next entry in the table (ex: `Next` or `Prev`), and so forth. All cursors are automatically closed when the prepared statement is reset or finalized. 

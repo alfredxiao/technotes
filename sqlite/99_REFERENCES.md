@@ -1,0 +1,3 @@
+- https://michalpitr.substack.com/p/how-does-sqlite-store-data
+- https://til.simonwillison.net/sqlite/database-file-size
+- https://fly.io/blog/sqlite-internals-btree/
