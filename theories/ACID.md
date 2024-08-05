@@ -2,15 +2,22 @@
 
 
 # Rollback
-<pre>
-Transaction1                              | Transaction2
-------------------------------------------------------------
-BEGIN;                                    |
-SELECT age FROM users WHERE id = 1;       |
--- retrieves 20                           |
-                                          |
-                                          |
-</pre>
+
+<table>
+  <tr>
+    <th>Transaction1</th><th>Transaction2</th>
+  </tr>
+  <tr>
+    <td>
+    BEGIN;
+    SELECT age FROM users WHERE id = 1;
+    -- retrieves 20
+    </td>
+    <td>
+    </td>
+  </tr>
+</table>
+
 # Commit of Update
 
 # References
