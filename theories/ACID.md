@@ -9,9 +9,11 @@
   </tr>
   <tr>
     <td>
+    <code>
     BEGIN;
     SELECT age FROM users WHERE id = 1;
     -- retrieves 20
+    </code>
     </td>
     <td>
     </td>
