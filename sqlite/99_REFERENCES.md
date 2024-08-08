@@ -1,3 +1,16 @@
 - https://michalpitr.substack.com/p/how-does-sqlite-store-data
 - https://til.simonwillison.net/sqlite/database-file-size
 - https://fly.io/blog/sqlite-internals-btree/
+- https://jvns.ca/blog/2014/09/27/how-does-sqlite-work-part-1-pages/
+- https://jvns.ca/blog/2014/10/02/how-does-sqlite-work-part-2-btrees/
+- https://cstack.github.io/db_tutorial/
+- https://github.com/cstack/db_tutorial?tab=readme-ov-file
+- https://www.compileralchemy.com/books/sqlite-internals/
+- https://sqlite.org
+- https://askclees.com/2020/11/20/sqlite-databases-at-hex-level/
+- https://michalpitr.substack.com/p/how-does-sqlite-store-data
+- https://github.com/rqlite/rqlite
+- https://fly.io/blog/sqlite-internals-btree/
+- https://fly.io/blog/sqlite-virtual-machine/
+- https://fly.io/blog/sqlite-internals-wal/
+- https://fly.io/blog/sqlite-internals-rollback-journal/
